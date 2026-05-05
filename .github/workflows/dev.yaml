@@ -1,0 +1,47 @@
+name: DevX Dev CICD workflow
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+    paths:
+      - "services/atlas-api/**"
+      - "deploy/k8s/overlays/dev/**"
+      - ".github/workflows/dev.yml"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What do you want to do?"
+        required: true
+        default: "deploy"
+        type: choice
+        options:
+          - deploy
+          - destroy
+      environment:
+        description: "Environment to deploy"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+permissions:
+  contents: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO }}
+  SERVICE_DIR: services/atlas-api
+
+jobs:
+  test:
+    runs-on: Ubuntu-latest
+    steps:
+      - name: Echo test
+        run: echo "This is a test job to check if the workflow is triggered correctly."
+  build-test-scan-push-update-dev:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
